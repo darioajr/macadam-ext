@@ -107,9 +107,11 @@ git push origin v0.1.0
 ### 2. Install from tap
 
 ```bash
-brew tap darioajr/macadam-ext
+brew tap darioajr/macadam-ext https://github.com/darioajr/macadam-ext
 brew install darioajr/macadam-ext/macadam-ext
 ```
+
+Note: Installing directly from a raw formula URL is not reliable in recent Homebrew versions. Prefer tapping the repository explicitly as shown above.
 
 ### 3. Upgrade when new versions are released
 
