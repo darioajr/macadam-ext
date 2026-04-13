@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+	echo "Usage: $0 VM_NAME SOURCE TARGET" >&2
+	echo >&2
+	echo "  SOURCE/TARGET may use the remote form vm:/path/to/file" >&2
+	echo "  Examples:" >&2
+	echo "    $0 my-vm ./arquivo.txt vm:/tmp/" >&2
+	echo "    $0 my-vm vm:/tmp/arquivo.txt ./" >&2
+}
+
+if [[ $# -eq 0 ]]; then
+	usage
+	exit 1
+fi
+
+if [[ $# -eq 1 && ( "$1" == "-h" || "$1" == "--help" ) ]]; then
+	usage
+	exit 0
+fi
+
+if [[ $# -ne 3 ]]; then
+	usage
+	exit 1
+fi
+
+VM_NAME="$1"
+SOURCE="$2"
+TARGET="$3"
+
+VM_USER="$(macadam inspect "$VM_NAME" | jq -r '.[0].SSHConfig.RemoteUsername')"
+SSH_PORT="$(macadam inspect "$VM_NAME" | jq -r '.[0].SSHConfig.Port')"
+SSH_KEY="$(macadam inspect "$VM_NAME" | jq -r '.[0].SSHConfig.IdentityPath')"
+
+remote_spec="$VM_USER@127.0.0.1"
+
+normalize_path() {
+	local path="$1"
+
+	if [[ "$path" == vm:* ]]; then
+		echo "$remote_spec:${path#vm:}"
+		return
+	fi
+
+	echo "$path"
+}
+
+scp -i "$SSH_KEY" -P "$SSH_PORT" "$(normalize_path "$SOURCE")" "$(normalize_path "$TARGET")"
