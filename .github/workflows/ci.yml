@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate scripts
+        run: |
+          bash -n ./macadam-port
+          bash -n ./macadam-scp
+
+      - name: Validate help output
+        run: |
+          bash ./macadam-port --help
+          bash ./macadam-scp --help
+
+      - name: Validate formula exists
+        run: test -f Formula/macadam-ext.rb
